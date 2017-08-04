@@ -8,7 +8,7 @@ from extruct.w3cmicrodata import MicrodataExtractor
 from scrapy.loader import ItemLoader
 
 from homebrewsupply.items import Product
-from homebrewsupply.loaders import ProductLoader 
+from homebrewsupply.loaders import ProductLoader
 
 logger = logging.getLogger()
 
@@ -48,7 +48,7 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
         for product_url in products_urls:
             logger.debug('Requesting product: {0}'.format(
                 product_url))
-            
+
             logger.info('Origin: {0} | Product {1} | Category: {2}'.format(
                 response.url, product_url, category))
 
@@ -91,6 +91,7 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
             response.body_as_unicode(), response.url)
 
         il = ProductLoader(item=Product())
+        il.add_value('store', self.name)
         il.add_value('url', response.url)
         il.add_value('category', response.meta.get('category', 'N/A'))
 
