@@ -11,3 +11,4 @@ class Product(scrapy.Item):
     price = scrapy.Field()
     unit = scrapy.Field()
     available = scrapy.Field()
+    store = scrapy.Field()

@@ -5,12 +5,9 @@ import re
 
 import scrapy
 from extruct.w3cmicrodata import MicrodataExtractor
-from scrapy.loader import ItemLoader
 
 from homebrewsupply.items import Product
 from homebrewsupply.loaders import ProductLoader
-
-logger = logging.getLogger()
 
 
 class UrbanbrewshopComBrSpider(scrapy.Spider):
@@ -22,7 +19,7 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
         categories_urls = response.xpath(
             '//section[@id="nav_menu-2"]//a/@href').extract()
         for category_url in categories_urls:
-            logger.debug('Requesting category: {0}'.format(
+            self.logger.debug('Requesting category: {0}'.format(
                 category_url))
             yield scrapy.Request(
                 response.urljoin(category_url),
@@ -46,17 +43,16 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
         category = self._get_category_name(response.url)
 
         for product_url in products_urls:
-            logger.debug('Requesting product: {0}'.format(
+            self.logger.debug('Requesting product: {0}'.format(
                 product_url))
 
-            logger.info('Origin: {0} | Product {1} | Category: {2}'.format(
+            self.logger.info('Origin: {0} | Product {1} | Category: {2}'.format(
                 response.url, product_url, category))
 
-            request = scrapy.Request(
+            yield scrapy.Request(
                 response.urljoin(product_url),
+                meta={'category': category},
                 callback=self._process_product)
-            request.meta['category'] = category
-            yield request
 
         pagination = response.xpath(
             '//span[@class="pagination-meta"]//text()').extract_first()
@@ -79,7 +75,7 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
                             r'\g<1>{0}\g<3>'.format(page),
                             base_page_url
                         )
-                        logger.debug('Requesting page {0}: {1}'.format(
+                        self.logger.debug('Requesting page {0}: {1}'.format(
                             page, page_url))
                         yield scrapy.Request(
                             response.urljoin(page_url),
@@ -90,7 +86,7 @@ class UrbanbrewshopComBrSpider(scrapy.Spider):
         itemprops = extractor.extract(
             response.body_as_unicode(), response.url)
 
-        il = ProductLoader(item=Product())
+        il = ProductLoader()
         il.add_value('store', self.name)
         il.add_value('url', response.url)
         il.add_value('category', response.meta.get('category', 'N/A'))
