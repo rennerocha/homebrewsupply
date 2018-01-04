@@ -37,6 +37,6 @@ class SinnatrahComBrSpider(CrawlSpider):
 
         is_available = bool(response.css('.botao-nao_indisponivel'))
         il.add_value('available', is_available)
-        il.add_css('price', '#preco_atual')
+        il.add_css('price', '#preco_atual::attr(value)')
 
         yield il.load_item()
