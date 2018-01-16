@@ -35,7 +35,7 @@ class SinnatrahComBrSpider(CrawlSpider):
         il.add_css('name', '.product-name::text')
         il.add_css('description', '#descricao *::text')
 
-        is_available = bool(response.css('.botao-nao_indisponivel'))
+        is_available = not bool(response.css('.botao-nao_indisponivel'))
         il.add_value('available', is_available)
         il.add_css('price', '#preco_atual::attr(value)')
 
