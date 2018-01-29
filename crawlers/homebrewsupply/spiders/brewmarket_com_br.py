@@ -49,14 +49,23 @@ class BrewmarketComBrSpider(CrawlSpider):
         il.add_value('url', response.url)
         il.add_value('category', response.meta.get('category', 'N/A'))
 
-        il.add_value('name', itemprops[0]['properties']['name'])
+        for itemprop in itemprops:
+            is_product = itemprop.get('type') == 'https://data-vocabulary.org/Product'
+            if not is_product:
+                continue
 
-        offer_details = itemprops[0]['properties']['offerDetails']['properties']
-        il.add_value('price', offer_details.get('price'))
+            properties = itemprop.get('properties', {})
+            il.add_value('name', properties.get('name'))
 
-        is_available = bool(response.css('.in-stock').re('Em estoque'))
-        il.add_value('available', is_available)
+            offer_details = properties.get('offerDetails')
+            if isinstance(offer_details, list) and offer_details:
+                offer_details = offer_details.pop(0)
+            il.add_value(
+                'price', offer_details.get('properties', {}).get('price'))
 
-        il.add_css('description', '#tab-description *::text')
+            is_available = bool(response.css('.in-stock').re('Em estoque'))
+            il.add_value('available', is_available)
+
+            il.add_css('description', '#tab-description *::text')
 
         yield il.load_item()
